@@ -212,7 +212,12 @@ export default function Home() {
     if (!confirm('Are you absolutely sure? This action cannot be undone.')) return;
     setNukeBusy(true); setNukeMsg(null);
     try {
-      const r = await fetch('/api/admin/nuclear', { method: 'POST' });
+      const r = await fetch('/api/admin/nuclear', {
+        method: 'POST',
+        headers: {
+          ...(process.env.NEXT_PUBLIC_NUCLEAR_TOKEN ? { 'x-admin-token': process.env.NEXT_PUBLIC_NUCLEAR_TOKEN } : {})
+        }
+      });
       const j = await r.json();
       if (!r.ok || j.ok === false) throw new Error('Some deletions failed. Check server logs.');
       setNukeMsg('All data deleted.');

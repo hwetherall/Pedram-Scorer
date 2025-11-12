@@ -3,8 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    // Optional admin token gate: if NUCLEAR_ADMIN_TOKEN is set, require header x-admin-token to match
+    const requiredToken = process.env.NUCLEAR_ADMIN_TOKEN;
+    if (requiredToken) {
+      const provided = request.headers.get('x-admin-token') || '';
+      if (provided !== requiredToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     // Delete in dependency-safe order (children first)
     const steps: Array<{ table: string; filter?: (q: any) => any }> = [
       { table: 'rubric_scores' },
