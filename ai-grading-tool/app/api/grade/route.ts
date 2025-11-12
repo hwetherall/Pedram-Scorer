@@ -3,6 +3,7 @@ import mammoth from 'mammoth';
 import { extractPdfText } from '../../../lib/pdf-reader.js';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { rubric, rubricIdToLabel, rubricIdToPoints } from '../../../lib/rubric';
 
 // --- Re-integrated AI and Supabase Logic ---
 
@@ -25,179 +26,10 @@ type GradeResult = {
   error: string;
 };
 
-const rubric = [
-  {
-    "id": "A1",
-    "type": "question",
-    "text": "What sparks joy in your life? Moments of well-being, elation, success or good fortune in your life and work.",
-    "points": 1.25
-  },
-  {
-    "id": "A2",
-    "type": "question",
-    "text": "What are your greatest passions and/or goals in life?",
-    "points": 1.25
-  },
-  {
-    "id": "A3",
-    "type": "question",
-    "text": "Who is(are) your superhero(s)/role model(s)? Who inspires you to be your BEST? Perhaps a role-model you admire, a family member, public figure, or a fictitious character from a comic book. How would you describe him/her/them?",
-    "points": 1.25
-  },
-  {
-    "id": "A4",
-    "type": "question",
-    "text": "What values do you hold that is similar to him/her/them, and what do you aspire to be?",
-    "points": 1.25
-  },
-  {
-    "id": "A5",
-    "type": "question",
-    "text": "Reflect upon and share a 'wake-up' call experience that sparked growth.  Challenges and setbacks help us see more clearly a shift in mindset, perspective or behavior. ",
-    "points": 1.25
-  },
-  {
-    "id": "B1",
-    "type": "question",
-    "text": "What does your ideal day look like? ",
-    "points": 1.25
-  },
-  {
-    "id": "B2",
-    "type": "question",
-    "text": "What are you doing? How are you fulfilling your biggest dreams?",
-    "points": 1.25
-  },
-  {
-    "id": "B3",
-    "type": "question",
-    "text": "Where in the world are you living and working? Identify at least three places that you hope to spend time in the future .",
-    "points": 1.25
-  },
-  {
-    "id": "B4",
-    "type": "question",
-    "text": "What kind of people are you working with? How will you help them? How will they help you?",
-    "points": 1.25
-  },
-  {
-    "id": "B5",
-    "type": "question",
-    "text": "Why is this important to you and what motivated you to embark upon this next journey?  ",
-    "points": 1.25
-  },
-  {
-    "id": "C1",
-    "type": "question",
-    "text": "What is your story? ",
-    "points": 1.25
-  },
-  {
-    "id": "C2",
-    "type": "question",
-    "text": "Who is your target audience?",
-    "points": 1.25
-  },
-  {
-    "id": "C3",
-    "type": "question",
-    "text": "What is your value proposition? What impact will you have in your organization, community, or society?",
-    "points": 1.25
-  },
-  {
-    "id": "C4",
-    "type": "question",
-    "text": "What is your positioning statement and how will you communicate it? ",
-    "points": 1.25
-  },
-  {
-    "id": "C5",
-    "type": "question",
-    "text": "Why would your ‘customer’ choose you?",
-    "points": 1.25
-  },
-  {
-    "id": "C_BONUS",
-    "type": "bonus",
-    "text": "BONUS: Did you talk to a potential customer and conducted an informational interview?",
-    "points": 1
-  },
-  {
-    "id": "D1",
-    "type": "question",
-    "text": "What potential opportunities are you considering for your career? ",
-    "points": 1.25
-  },
-  {
-    "id": "D2",
-    "type": "question",
-    "text": "What new domain or market do you want to know better? Which networks do you need to explore? Name 2-3 people whom you would like to connect with to realize your vision.",
-    "points": 1.25
-  },
-  {
-    "id": "D3",
-    "type": "question",
-    "text": "Which skill do you want to improve? What 3 things will you commit to do to improve this skill?",
-    "points": 1.25
-  },
-  {
-    "id": "D4",
-    "type": "question",
-    "text": "How would each of these opportunities help you accomplish your long-term vision? ",
-    "points": 1.25
-  },
-  {
-    "id": "D5",
-    "type": "question",
-    "text": "What challenges will you have to conquer as you make your next career move, whether that means looking for a job, starting a new venture, or earning an additional academic degree?",
-    "points": 1.25
-  },
-  {
-    "id": "D_BONUS",
-    "type": "bonus",
-    "text": "BONUS: Did you name 2-3 people whom you would like to connect with to realize your vision/ or commit to 3 things to improve your skill/ aid your development",
-    "points": 1
-  },
-  {
-    "id": "E1",
-    "type": "question",
-    "text": "Effective use of one required book of your choice (from those books listed in the syllabus), as well as frameworks from any of the books, lectures or readings in GEM or ETL",
-    "points": 1
-  },
-  {
-    "id": "E2",
-    "type": "question",
-    "text": "Honors 10-page limit (A = within limit, B = 1-2 page over limit, C/D/F = 3 or more pages over limit)",
-    "points": 0.75
-  },
-  {
-    "id": "E3",
-    "type": "question",
-    "text": "Spelling, grammar, footnotes, bibliography, etc. ",
-    "points": 0.75
-  },
-  {
-    "id": "F1",
-    "type": "bonus",
-    "text": "Exceptionally creative format and use of exhibits   ",
-    "points": 0.75
-  },
-  {
-    "id": "F2",
-    "type": "bonus",
-    "text": "Effective use of humor  ",
-    "points": 0.75
-  },
-  {
-    "id": "G",
-    "type": "bonus",
-    "text": "Disucssion During Presentation Enter numeric # between 1-3",
-    "points": 3
-  }
-];
-
-function getSystemPrompt(rubric: any[]): string {
-  const rubricJSON = JSON.stringify(rubric, null, 2);
+function getSystemPrompt(rubricArr: typeof rubric): string {
+  // Exclude rubric item G from scoring; it will be used to extract discussion points instead
+  const rubricForScoring = rubricArr.filter(item => item.type !== 'section' && item.id !== 'G');
+  const rubricJSON = JSON.stringify(rubricForScoring, null, 2);
 
   return `You are an expert teaching assistant. You will be given a student's submission and a detailed grading rubric.
 
@@ -210,20 +42,24 @@ Your response MUST be a single JSON object with the following structure:
       "id": "A1",
       "score": <score_for_A1>,
       "justification": "<brief_justification_for_A1_score>"
-    },
-    // ... one for each rubric item
+    }
   ],
   "overall_feedback": "<your_overall_feedback_on_the_submission>",
-  "total_score": <sum_of_all_scores>
+  "total_score": <sum_of_all_scores>,
+  "discussion_points": ["<point_1>","<point_2>","<point_3>"]
 }
 
-Here is the rubric in JSON format. Use the 'id' for each item in your response. Only grade items that are of type 'question' or 'bonus'.
+STRICT RULES:
+- Do NOT include rubric item with id "G" in "scores" or "total_score". It is NOT scored.
+- Instead, extract EXACTLY three concise, specific discussion points from the submission that would be compelling to bring up during a presentation. These should be grounded in the submission's content (claims, insights, risks, recommendations, or data points), clear on what to discuss, and each under 25 words. Return them under the top-level key "discussion_points" as an array of three strings.
+
+Here is the rubric in JSON format. Use the 'id' for each item in your response. Only grade items that are of type 'question' or 'bonus'. Item "G" has been intentionally omitted because it's non-scored.
 ${rubricJSON}
 `;
 }
 
-async function gradeWithModel(model: string, text: string, rubric: any): Promise<GradeResult> {
-  const systemPrompt = getSystemPrompt(rubric);
+async function gradeWithModel(model: string, text: string, rubricArr: typeof rubric): Promise<GradeResult> {
+  const systemPrompt = getSystemPrompt(rubricArr);
 
   try {
     const response = await openrouter.chat.completions.create({
@@ -260,6 +96,34 @@ async function gradeWithModel(model: string, text: string, rubric: any): Promise
   }
 }
 
+async function extractApplicantName(text: string): Promise<string | null> {
+  try {
+    const prompt = `Extract the student's full name from the following text. Return JSON only.
+If unsure, return {"full_name": null}.
+Schema: {"full_name": string|null}
+Text:\n---\n${text.slice(0, 8000)}\n---`;
+
+    const resp = await openrouter.chat.completions.create({
+      model: 'openai/gpt-5',
+      messages: [
+        { role: 'system', content: 'You extract person names. Output strict JSON only with keys: full_name.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0,
+    });
+
+    let content = resp.choices[0].message.content || '{}';
+    content = content.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(content) as { full_name?: string | null };
+    const name = (data.full_name || '').trim();
+    return name ? name : null;
+  } catch (e) {
+    console.error('Name extraction error:', (e as any).message);
+    return null;
+  }
+}
+
 // --- End Re-integrated Logic ---
 
 
@@ -269,13 +133,14 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    let applicantName = (formData.get('applicant_name') as string | null)?.trim() || null;
 
     if (!file) {
       console.log('No file uploaded');
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    console.log('File received:', file.name, 'Type:', file.type);
+    console.log('File received:', file.name, 'Type:', file.type, 'Applicant:', applicantName || 'Unassigned');
 
     const buffer = Buffer.from(await file.arrayBuffer());
     let textContent = '';
@@ -296,7 +161,46 @@ export async function POST(request: Request) {
       console.log('No text extracted');
       return NextResponse.json({ error: 'Could not extract text from the document.' }, { status: 400 });
     }
-    
+
+    // AI-based applicant name extraction when not provided
+    let extracted_applicant_name: string | null = null;
+    if (!applicantName) {
+      extracted_applicant_name = await extractApplicantName(textContent);
+      if (extracted_applicant_name) {
+        console.log('Extracted applicant name:', extracted_applicant_name);
+        applicantName = extracted_applicant_name;
+      } else {
+        console.log('No applicant name extracted');
+      }
+    }
+
+    // --- Upsert/Fetch applicant if provided ---
+    let applicantId: string | null = null;
+    if (applicantName) {
+      try {
+        const { data: existing, error: selErr } = await supabase
+          .from('applicants')
+          .select('id')
+          .eq('full_name', applicantName)
+          .limit(1)
+          .maybeSingle();
+        if (selErr) throw selErr;
+        if (existing?.id) {
+          applicantId = existing.id;
+        } else {
+          const { data: created, error: insErr } = await supabase
+            .from('applicants')
+            .insert({ full_name: applicantName })
+            .select('id')
+            .single();
+          if (insErr) throw insErr;
+          applicantId = created.id;
+        }
+      } catch (apErr: any) {
+        console.error('Applicant upsert error:', apErr.message);
+      }
+    }
+
     // --- Start Grading Process ---
     const models = ['openai/gpt-5', 'x-ai/grok-4', 'google/gemini-2.5-pro', 'anthropic/claude-sonnet-4.5'] as const;
 
@@ -321,19 +225,68 @@ export async function POST(request: Request) {
 
     console.log('Average score calculated:', average_score);
 
+    // Aggregate non-scored discussion points (rubric G) from model outputs
+    const discussionPointsCandidates: string[] = [];
+    for (const r of successfulResults) {
+      const pts = (r.raw_response && Array.isArray((r.raw_response as any).discussion_points))
+        ? (r.raw_response as any).discussion_points as unknown[]
+        : [];
+      for (const p of pts) {
+        if (typeof p === 'string' && p.trim()) discussionPointsCandidates.push(p.trim());
+      }
+    }
+    const uniqueDiscussionPoints = Array.from(new Set(discussionPointsCandidates));
+    const discussion_points = uniqueDiscussionPoints.slice(0, 3);
+
     // --- Supabase Integration ---
     try {
       console.log('Saving to Supabase...');
       const { data: submissionData, error: submissionError } = await supabase
         .from('submissions')
-        .insert({ file_name: file.name, final_average_score: average_score })
-        .select()
+        .insert({ 
+          file_name: file.name, 
+          final_average_score: average_score,
+          applicant_id: applicantId,
+          original_filename: file.name,
+          text_chars_count: textContent.length
+        })
+        .select('id')
         .single();
 
       if (submissionError) throw submissionError;
+      const submissionId = submissionData.id;
 
+      // Build points map for rubric
+      const pointsById = new Map<string, number>();
+      rubric.forEach(item => {
+        if (item.type !== 'section') pointsById.set(item.id, Number(item.points));
+      });
+
+      // Prepare rubric_scores inserts
+      const rubricRows: any[] = [];
+      for (const res of successfulResults) {
+        const scoresArr = (res.raw_response?.scores as Array<{ id: string; score: number; justification?: string }>) || [];
+        for (const s of scoresArr) {
+          if (!s?.id || typeof s.score !== 'number') continue;
+          rubricRows.push({
+            submission_id: submissionId,
+            model_name: res.model_name,
+            rubric_id: s.id,
+            points_possible: pointsById.get(s.id) ?? null,
+            score: s.score,
+            justification: s.justification ?? null,
+          });
+        }
+      }
+
+      if (rubricRows.length > 0) {
+        const { error: rsErr } = await supabase.from('rubric_scores').insert(rubricRows);
+        if (rsErr) throw rsErr;
+      }
+
+      // Save per-model summary rows (existing logic)
       const gradesToInsert = results.map((result: GradeResult) => ({
-        submission_id: submissionData.id,
+        submission_id: submissionId,
         model_name: result.model_name,
         score: 'score' in result ? result.score : null,
         feedback: 'feedback' in result ? result.feedback : ('error' in result ? result.error : null),
@@ -343,14 +296,47 @@ export async function POST(request: Request) {
       const { error: gradesError } = await supabase.from('grades').insert(gradesToInsert);
       if (gradesError) throw gradesError;
 
-      console.log('Successfully saved to Supabase. Submission ID:', submissionData.id);
+      console.log('Successfully saved to Supabase. Submission ID:', submissionId);
+
+      // Compute rubric-level averages for immediate response as well
+      const rubricMeta = new Map<string, { label: string; points?: number | null }>();
+      rubric.forEach(item => {
+        if (item.type !== 'section') rubricMeta.set(item.id, { label: item.text, points: Number(item.points) });
+      });
+
+      const sums = new Map<string, { sum: number; count: number }>();
+      for (const res of successfulResults) {
+        const scoresArr = (res.raw_response?.scores as Array<{ id: string; score: number }>) || [];
+        for (const s of scoresArr) {
+          if (!s?.id || typeof s.score !== 'number') continue;
+          const prev = sums.get(s.id) || { sum: 0, count: 0 };
+          prev.sum += Number(s.score);
+          prev.count += 1;
+          sums.set(s.id, prev);
+        }
+      }
+
+      const rubric_averages = Array.from(sums.entries()).map(([rubric_id, { sum, count }]) => {
+        const meta = rubricMeta.get(rubric_id);
+        return {
+          rubric_id,
+          label: meta?.label || rubric_id,
+          points_possible: meta?.points ?? null,
+          avg_score: sum / count,
+          num_models: count,
+        };
+      });
+
+      const weighted_total = rubric_averages.reduce((acc, r) => acc + r.avg_score, 0);
+
+      return NextResponse.json({ average_score, weighted_total, rubric_averages, results, extracted_applicant_name, discussion_points });
 
     } catch (dbError: any) {
       console.error("Supabase DB Error:", dbError);
     }
     // --- End Supabase Integration ---
 
-    return NextResponse.json({ average_score, results });
+    return NextResponse.json({ average_score, results, discussion_points });
 
   } catch (error: any) {
     console.error('API Error:', error);

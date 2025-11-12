@@ -1,0 +1,95 @@
+Thrive Map Submission (Sample 2)
+
+Student Name: Jordan Rivera
+
+---
+
+Discover: Who I Am
+
+What sparks joy in my life?
+I feel most alive when I’m facilitating moments of clarity for others—turning confusion into momentum. Coaching early-stage founders, shipping small tools that remove drudgery, and teaching workshops where teams leave with a shared vocabulary bring me consistent joy.
+
+Greatest passions and goals
+My passion is building humane AI assistants that free people from repetitive tasks. My long‑term goal is to launch a cooperative studio that creates open‑source, privacy‑first copilots for social impact organizations.
+
+Role model
+My role model is Dr. Fei‑Fei Li for her blend of technical excellence and principled vision about human‑centered AI. I admire her courage to steer the field toward responsibility and inclusion while still doing world‑class research.
+
+Values I share & who I aspire to be
+Values: curiosity, service, and stewardship. I aspire to become a leader who is calm under uncertainty, candid about trade‑offs, and generous with credit.
+
+A wake‑up call
+Two years ago I burned out trying to be a lone hero at a nonprofit. The experience forced me to slow down, delegate, and design processes that sustain people as much as products. That shift changed how I scope work and how I treat success.
+
+---
+
+Future Map: My Vision
+
+Ideal day
+Mornings are for two hours of deep work on research or prototyping; mid‑day for pair sessions with teammates and stakeholders; late afternoon for user interviews or docs; evenings reserved for a run and time with friends.
+
+Fulfilling my biggest dreams
+I will build a cooperative studio that ships small, high‑quality tools that compound in value. I’ll earmark Fridays for learning—reading papers, exploring libraries, and writing public notes.
+
+Where I’ll live and work
+I plan to split time between: Lisbon (tight remote‑tech network and renewable‑energy culture), Montreal (ethics‑AI community), and Taipei (strong civic‑tech scene).
+
+People I’ll work with & mutual help
+I want to work with operators and researchers who value rigor and kindness. I help them by translating fuzzy ideas into tractable steps; they help me by pressure‑testing assumptions and holding a high bar for evidence.
+
+Why this matters
+I watched mission‑driven teams drown in spreadsheets and copy‑paste. Giving them dignified tools creates time for care work and community building.
+
+---
+
+Design: Go‑To‑Market
+
+My story
+I’m an engineer‑turned‑facilitator who builds tiny tools that remove big friction. I specialize in stitching together reliable pipelines with thoughtful UX, then teaching teams how to own them.
+
+Target audience
+Small to midsize nonprofits and civic‑tech teams that handle sensitive data, value transparency, and want to automate without surveillance.
+
+Value proposition
+Privacy‑first copilots that automate repetitive workflows (intake triage, grant reporting, case notes) while keeping humans in the loop. Impact: fewer hours on paperwork, faster response times, higher data quality.
+
+Positioning & communication
+“Human‑centered automation for teams that care.” I’ll publish open playbooks, run live build‑along sessions, and share metrics dashboards that make results legible.
+
+Why customers would choose us
+We’re cooperative, open by default, and optimize for reliability over flash. We teach teams to maintain their tools instead of locking them into black boxes.
+
+BONUS (customer interview)
+I interviewed a program manager at a housing nonprofit who described spending 12 hours/month on eligibility summaries. We prototyped a note‑to‑summary assistant that cut the task to 2 hours while improving consistency.
+
+---
+
+Execution: Make It Happen
+
+Opportunities I’m considering
+(1) Partnering with two nonprofits to co‑develop pilots; (2) A fellowship to research auditability for AI assistants; (3) A part‑time role at an open‑source foundation.
+
+New domain & networks
+I want to deepen expertise in document intelligence and secure data flows. I’ll meet founders in the Open Data, Civic Tech, and Effective Institutions communities.
+
+Skill to improve & three commitments
+Skill: causal inference in product metrics. Commitments: complete an online course, replicate three classic studies with public datasets, and present learnings to peers for critique.
+
+How opportunities advance the vision
+Pilots generate grounded case studies and reusable templates; the fellowship yields research‑backed patterns; the foundation role amplifies distribution.
+
+Challenges I must overcome
+Funding early work without compromising mission; aligning privacy constraints with model capabilities; and hiring for values fit.
+
+BONUS (contacts/commitments)
+I’ve scheduled three conversations with nonprofit ops leaders and committed to sharing a pilot template publicly within six weeks.
+
+---
+
+Overall Quality
+
+Book/framework usage
+I’m applying concepts from “The Systems Bible” (Gall) and “Good Strategy/Bad Strategy” (Rumelt): focus on the kernel (diagnosis, guiding policy, coherent actions), and design small systems that fail safely.
+
+Length & mechanics
+This document is within the suggested limit. I’ve proofread for clarity and cohesion and included concrete commitments.
