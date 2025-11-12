@@ -1,0 +1,28 @@
+{
+  "id": "batch_5nuvef_mhvnlyw3",
+  "total": 2,
+  "completed": 2,
+  "failed": 0,
+  "createdAt": 1762931017443,
+  "parallelism": 4,
+  "items": [
+    {
+      "id": "batch_5nuvef_mhvnlyw3_0",
+      "fileName": "Thrive Map Submission.pdf",
+      "size": 32417,
+      "status": "Done",
+      "error": null,
+      "submissionId": "434460e9-da04-41c6-9283-2e6b90966727"
+    },
+    {
+      "id": "batch_5nuvef_mhvnlyw3_1",
+      "fileName": "Thrive Map SubmissionV2.pdf",
+      "size": 62112,
+      "status": "Done",
+      "error": null,
+      "submissionId": "2cd1e561-fc16-45c5-9712-fa0b60e9a164"
+    }
+  ],
+  "startedAt": 1762931017495,
+  "finishedAt": 1762931101258
+}

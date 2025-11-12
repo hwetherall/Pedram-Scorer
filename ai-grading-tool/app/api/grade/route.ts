@@ -397,7 +397,7 @@ export async function POST(request: Request) {
 
       const weighted_total = rubric_averages.reduce((acc, r) => acc + r.avg_score, 0);
 
-      return NextResponse.json({ average_score, weighted_total, rubric_averages, results, extracted_applicant_name, discussion_points });
+      return NextResponse.json({ average_score, weighted_total, rubric_averages, results, extracted_applicant_name, discussion_points, submission_id: submissionId });
 
     } catch (dbError: any) {
       console.error("Supabase DB Error:", dbError);

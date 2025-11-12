@@ -1,0 +1,28 @@
+{
+  "id": "batch_og204u_mhvo10rt",
+  "total": 2,
+  "completed": 2,
+  "failed": 0,
+  "createdAt": 1762931719721,
+  "parallelism": 4,
+  "items": [
+    {
+      "id": "batch_og204u_mhvo10rt_0",
+      "fileName": "Thrive Map Submission.pdf",
+      "size": 32417,
+      "status": "Done",
+      "error": null,
+      "submissionId": "45438ec0-46be-40a8-8d64-24004da73d2d"
+    },
+    {
+      "id": "batch_og204u_mhvo10rt_1",
+      "fileName": "Thrive Map SubmissionV2.pdf",
+      "size": 62112,
+      "status": "Done",
+      "error": null,
+      "submissionId": "ab3fb657-70bd-45fa-833b-bdd51ef8a98e"
+    }
+  ],
+  "startedAt": 1762931719745,
+  "finishedAt": 1762931814449
+}

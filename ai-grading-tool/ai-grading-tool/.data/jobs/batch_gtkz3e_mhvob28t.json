@@ -1,0 +1,28 @@
+{
+  "id": "batch_gtkz3e_mhvob28t",
+  "total": 2,
+  "completed": 2,
+  "failed": 0,
+  "createdAt": 1762932188189,
+  "parallelism": 4,
+  "items": [
+    {
+      "id": "batch_gtkz3e_mhvob28t_0",
+      "fileName": "Thrive Map Submission.pdf",
+      "size": 32417,
+      "status": "Done",
+      "error": null,
+      "submissionId": "30558a0f-d31f-4276-b489-342c0d43749c"
+    },
+    {
+      "id": "batch_gtkz3e_mhvob28t_1",
+      "fileName": "Thrive Map SubmissionV2.pdf",
+      "size": 62112,
+      "status": "Done",
+      "error": null,
+      "submissionId": "ca210646-d088-4a09-a8d5-b7eff00430f1"
+    }
+  ],
+  "startedAt": 1762932188210,
+  "finishedAt": 1762932277165
+}

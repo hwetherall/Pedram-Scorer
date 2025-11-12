@@ -1,0 +1,25 @@
+{
+  "id": "batch_5s1eh5_mhvofbgv",
+  "total": 2,
+  "completed": 0,
+  "failed": 0,
+  "createdAt": 1762932386767,
+  "parallelism": 4,
+  "items": [
+    {
+      "id": "batch_5s1eh5_mhvofbgv_0",
+      "fileName": "Thrive Map Submission.pdf",
+      "size": 32417,
+      "status": "Running",
+      "error": null
+    },
+    {
+      "id": "batch_5s1eh5_mhvofbgv_1",
+      "fileName": "Thrive Map SubmissionV2.pdf",
+      "size": 62112,
+      "status": "Running",
+      "error": null
+    }
+  ],
+  "startedAt": 1762932386784
+}
