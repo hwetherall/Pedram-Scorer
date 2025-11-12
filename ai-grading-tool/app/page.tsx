@@ -168,6 +168,8 @@ export default function Home() {
   const [extractedText, setExtractedText] = useState<string | null>(null); // State for extracted text
   const [applicantName, setApplicantName] = useState<string>('');
   const [showModels, setShowModels] = useState<boolean>(false); // collapsed by default
+  const [nukeBusy, setNukeBusy] = useState(false);
+  const [nukeMsg, setNukeMsg] = useState<string | null>(null);
 
   type SubmissionItem = { id: string; file_name: string; created_at: string; final_average_score: number | null; applicant_name: string | null };
   const [history, setHistory] = useState<SubmissionItem[]>([]);
@@ -202,6 +204,26 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e: any) {
       alert(e.message);
+    }
+  };
+
+  const nuclearOption = async () => {
+    if (!confirm('This will permanently delete ALL data in Supabase for this app. Continue?')) return;
+    if (!confirm('Are you absolutely sure? This action cannot be undone.')) return;
+    setNukeBusy(true); setNukeMsg(null);
+    try {
+      const r = await fetch('/api/admin/nuclear', { method: 'POST' });
+      const j = await r.json();
+      if (!r.ok || j.ok === false) throw new Error('Some deletions failed. Check server logs.');
+      setNukeMsg('All data deleted.');
+      setResult(null);
+      setApplicantName('');
+      setFile(null);
+      await loadHistory();
+    } catch (e: any) {
+      setNukeMsg(e.message || 'Delete failed.');
+    } finally {
+      setNukeBusy(false);
     }
   };
 
@@ -554,6 +576,26 @@ export default function Home() {
         <div className="mt-12">
           <h3 className="text-2xl font-bold font-serif text-primary mb-4">Training (Gold Examples)</h3>
           <TrainingUploader onUploaded={loadHistory} />
+        </div>
+
+        {/* Nuclear Option */}
+        <div className="mt-12 p-4 border border-destructive/30 bg-destructive/5 rounded-md">
+          <div className="flex items-center gap-3 mb-2">
+            <XCircle className="h-6 w-6 text-destructive" />
+            <h3 className="text-lg font-bold text-destructive">Nuclear Option</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            Permanently deletes ALL data (submissions, grades, rubric scores, training examples, calibrations, applicants).
+          </p>
+          <button
+            type="button"
+            onClick={nuclearOption}
+            disabled={nukeBusy}
+            className="px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50"
+          >
+            {nukeBusy ? 'Deleting…' : 'Nuclear Option'}
+          </button>
+          {nukeMsg && <p className="mt-2 text-sm">{nukeMsg}</p>}
         </div>
       </div>
     </main>

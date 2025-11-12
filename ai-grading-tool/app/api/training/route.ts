@@ -208,6 +208,28 @@ export async function POST(request: Request) {
       raw_response: r.total_score ? { scores: r.scores, overall_feedback: r.overall_feedback, total_score: r.total_score } : { error: r.error },
     })));
 
+    // Auto-recalibrate model biases after each training example upload
+    try {
+      const { data: agg, error: aggErr } = await supabase
+        .from('v_training_residuals_by_model_rubric')
+        .select('model_name,rubric_id,avg_residual');
+      if (aggErr) throw aggErr;
+      if (Array.isArray(agg) && agg.length) {
+        const rows = agg.map((r: any) => ({
+          model_name: r.model_name,
+          rubric_id: r.rubric_id,
+          bias: (Number(r.avg_residual) * -1) || 0,
+          scale: 1,
+        }));
+        const { error: upErr } = await supabase
+          .from('model_calibrations')
+          .upsert(rows, { onConflict: 'model_name,rubric_id' });
+        if (upErr) throw upErr;
+      }
+    } catch (e: any) {
+      console.error('Auto recalibration error:', e.message);
+    }
+
     return NextResponse.json({ example_id: ex.id, submission_id: sub.id, parsed_line_scores_count: parsedLines.length });
   } catch (e: any) {
     console.error('TRAINING API ERROR:', e.message);

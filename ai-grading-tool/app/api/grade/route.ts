@@ -219,6 +219,73 @@ export async function POST(request: Request) {
       console.log('All models failed');
       return NextResponse.json({ error: 'All models failed to provide a grade.', details: results }, { status: 500 });
     }
+
+    // --- Apply model calibrations (bias/scale) per rubric before computing totals ---
+    // Build points map for clamping calibrated scores within [0, points_possible]
+    const calPointsById = new Map<string, number>();
+    rubric.forEach(item => { if (item.type !== 'section') calPointsById.set(item.id, Number(item.points)); });
+
+    // Fetch calibrations for the models used
+    let calibrationsByModel = new Map<string, Map<string, { bias: number; scale: number }>>();
+    try {
+      const { data: calRows, error: calErr } = await supabase
+        .from('model_calibrations')
+        .select('model_name,rubric_id,bias,scale')
+        .in('model_name', [...models] as unknown as string[]);
+      if (calErr) {
+        console.error('Calibration fetch error:', calErr.message);
+      } else if (Array.isArray(calRows)) {
+        const tmp = new Map<string, Map<string, { bias: number; scale: number }>>();
+        for (const r of calRows) {
+          const m = String(r.model_name);
+          const rid = String(r.rubric_id);
+          const bias = Number(r.bias) || 0;
+          const scale = Number(r.scale) || 1;
+          if (!tmp.has(m)) tmp.set(m, new Map());
+          tmp.get(m)!.set(rid, { bias, scale });
+        }
+        calibrationsByModel = tmp;
+      }
+    } catch (e: any) {
+      console.error('Calibration application error:', e.message);
+    }
+
+    // Prepare calibrated scores by model; if no calibration exists, raw scores are used
+    const calibratedScoresByModel = new Map<string, Array<{ id: string; score: number; justification?: string }>>();
+
+    for (const res of successfulResults) {
+      const rawScores = (res.raw_response?.scores as Array<{ id: string; score: number; justification?: string }>) || [];
+      const calForModel = calibrationsByModel.get(res.model_name);
+      const adjusted = rawScores.map(s => {
+        const rid = String(s.id);
+        const pts = calPointsById.get(rid);
+        const cal = calForModel?.get(rid);
+        const scale = cal?.scale ?? 1;
+        const bias = cal?.bias ?? 0;
+        let newScore = Number(s.score);
+        if (Number.isFinite(newScore)) {
+          newScore = newScore * scale + bias;
+          if (pts != null && Number.isFinite(pts)) {
+            newScore = Math.min(Math.max(newScore, 0), Number(pts));
+          } else {
+            newScore = Math.max(newScore, 0);
+          }
+        }
+        return { ...s, score: newScore };
+      });
+
+      calibratedScoresByModel.set(res.model_name, adjusted);
+
+      // Recompute calibrated total (exclude 'G'; 'G' isn't in scores per system prompt)
+      const calibratedTotal = adjusted.reduce((acc, s) => acc + (Number(s.score) || 0), 0);
+
+      // Overwrite the result's score with calibrated total and annotate raw_response
+      (res as any).score = calibratedTotal;
+      if (res.raw_response && typeof res.raw_response === 'object') {
+        (res.raw_response as any).calibrated_total_score = calibratedTotal;
+        (res.raw_response as any).calibration_applied = true;
+      }
+    }
     
     const totalScore = successfulResults.reduce((acc: number, result: { score: number }) => acc + result.score, 0);
     const average_score = totalScore / successfulResults.length;
@@ -256,16 +323,16 @@ export async function POST(request: Request) {
       if (submissionError) throw submissionError;
       const submissionId = submissionData.id;
 
-      // Build points map for rubric
+      // Build points map for rubric (for persistence; keep separate from calibration map above)
       const pointsById = new Map<string, number>();
-      rubric.forEach(item => {
-        if (item.type !== 'section') pointsById.set(item.id, Number(item.points));
-      });
+      rubric.forEach(item => { if (item.type !== 'section') pointsById.set(item.id, Number(item.points)); });
 
       // Prepare rubric_scores inserts
       const rubricRows: any[] = [];
       for (const res of successfulResults) {
-        const scoresArr = (res.raw_response?.scores as Array<{ id: string; score: number; justification?: string }>) || [];
+        // Prefer calibrated scores if available; fallback to raw
+        const scoresArr = calibratedScoresByModel.get(res.model_name)
+          ?? ((res.raw_response?.scores as Array<{ id: string; score: number; justification?: string }>) || []);
         for (const s of scoresArr) {
           if (!s?.id || typeof s.score !== 'number') continue;
           rubricRows.push({
@@ -306,7 +373,8 @@ export async function POST(request: Request) {
 
       const sums = new Map<string, { sum: number; count: number }>();
       for (const res of successfulResults) {
-        const scoresArr = (res.raw_response?.scores as Array<{ id: string; score: number }>) || [];
+        const scoresArr = calibratedScoresByModel.get(res.model_name)
+          ?? ((res.raw_response?.scores as Array<{ id: string; score: number }>) || []);
         for (const s of scoresArr) {
           if (!s?.id || typeof s.score !== 'number') continue;
           const prev = sums.get(s.id) || { sum: 0, count: 0 };
