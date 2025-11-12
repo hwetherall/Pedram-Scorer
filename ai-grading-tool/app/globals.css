@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  /* Stanford Cardinal Red: #8C1515 */
+  --color-primary: 0 69% 31%;
+  --color-primary-foreground: 0 0% 100%;
+
+  /* Light theme - clean and professional */
+  --color-background: 0 0% 98%;
+  --color-foreground: 0 0% 15%;
+
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 0 0% 15%;
+
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 0 0% 15%;
+
+  --color-secondary: 0 0% 96%;
+  --color-secondary-foreground: 0 0% 9%;
+
+  --color-muted: 0 0% 96%;
+  --color-muted-foreground: 0 0% 45%;
+
+  --color-accent: 0 0% 96%;
+  --color-accent-foreground: 0 0% 9%;
+
+  --color-destructive: 0 84% 60%;
+  --color-destructive-foreground: 0 0% 100%;
+
+  --color-border: 0 0% 89%;
+  --color-input: 0 0% 89%;
+  --color-ring: 0 69% 31%;
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
