@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { rubricIdToLabel } from '../../../../lib/rubric';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables are missing');
+  }
+  return createClient(url, key);
+}
 
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const supabase = getSupabase();
     const { id } = await ctx.params; // params is a Promise in Next 16
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
@@ -22,6 +28,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const supabase = getSupabase();
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 

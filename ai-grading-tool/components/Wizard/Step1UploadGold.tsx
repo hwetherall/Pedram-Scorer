@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import UploadDropzone from '../UploadDropzone';
+import Modal from '../Modal';
 
-export default function Step1UploadGold() {
+export default function Step1UploadGold({ onGoToCalibrate }: { onGoToCalibrate?: () => void }) {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [lineScoresFile, setLineScoresFile] = useState<File | null>(null);
   const [lineScoresJson, setLineScoresJson] = useState<string>('');
@@ -13,6 +14,7 @@ export default function Step1UploadGold() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [showNextModal, setShowNextModal] = useState<boolean>(false);
 
   const onSubmit = async () => {
     setSubmitting(true);
@@ -38,6 +40,7 @@ export default function Step1UploadGold() {
       const json = await resp.json();
       if (!resp.ok) throw new Error(json?.error || 'Upload failed');
       setResult(`Added example ${json.example_id}, training submission ${json.submission_id}, parsed lines: ${json.parsed_line_scores_count}`);
+      setShowNextModal(true);
     } catch (e: any) {
       setError(e?.message || 'Failed');
     } finally {
@@ -94,6 +97,43 @@ export default function Step1UploadGold() {
       </div>
       {error ? <div className="text-red-600 text-sm">{error}</div> : null}
       {result ? <div className="text-green-700 text-sm">{result}</div> : null}
+
+      <Modal
+        open={showNextModal}
+        title="Gold example added"
+        onClose={() => setShowNextModal(false)}
+        actions={
+          <>
+            <button
+              className="px-3 py-2 rounded border"
+              onClick={() => {
+                setShowNextModal(false);
+                // Reset form to add another
+                setDocFile(null);
+                setLineScoresFile(null);
+                setLineScoresJson('');
+                setFinalScore('');
+                setNotes('');
+              }}
+            >
+              Upload another
+            </button>
+            <button
+              className="px-3 py-2 rounded bg-blue-600 text-white"
+              onClick={() => {
+                setShowNextModal(false);
+                if (onGoToCalibrate) onGoToCalibrate();
+              }}
+            >
+              Go to Calibrate
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-2 text-gray-700">
+          <p>Your example has been processed. You can upload more gold examples to improve calibration, or continue to Calibrate now.</p>
+        </div>
+      </Modal>
     </div>
   );
 }

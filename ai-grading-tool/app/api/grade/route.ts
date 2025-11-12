@@ -7,14 +7,25 @@ import { rubric, rubricIdToLabel, rubricIdToPoints } from '../../../lib/rubric';
 
 // --- Re-integrated AI and Supabase Logic ---
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables are missing');
+  }
+  return createClient(url, key);
+}
 
-const openrouter = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+function getOpenRouter(): OpenAI {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) {
+    throw new Error('OpenRouter API key is missing');
+  }
+  return new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: key,
+  });
+}
 
 type GradeResult = {
   model_name: string;
@@ -62,6 +73,7 @@ async function gradeWithModel(model: string, text: string, rubricArr: typeof rub
   const systemPrompt = getSystemPrompt(rubricArr);
 
   try {
+    const openrouter = getOpenRouter();
     const response = await openrouter.chat.completions.create({
       model: model,
       messages: [
@@ -98,6 +110,7 @@ async function gradeWithModel(model: string, text: string, rubricArr: typeof rub
 
 async function extractApplicantName(text: string): Promise<string | null> {
   try {
+    const openrouter = getOpenRouter();
     const prompt = `Extract the student's full name from the following text. Return JSON only.
 If unsure, return {"full_name": null}.
 Schema: {"full_name": string|null}
@@ -129,6 +142,7 @@ Text:\n---\n${text.slice(0, 8000)}\n---`;
 
 export async function POST(request: Request) {
   try {
+    const supabase = getSupabase();
     console.log('Received grading request');
 
     const formData = await request.formData();

@@ -2,7 +2,14 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { rubricIdToLabel } from '../../../../../lib/rubric';
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables are missing');
+  }
+  return createClient(url, key);
+}
 
 function toCsv(rows: Array<Record<string, any>>): string {
   if (!rows.length) return '';
@@ -16,6 +23,7 @@ function toCsv(rows: Array<Record<string, any>>): string {
 
 export async function GET(request: Request, ctx: { params: Promise<{ submissionId: string }> }) {
   try {
+    const supabase = getSupabase();
     const { submissionId } = await ctx.params;
     if (!submissionId) return NextResponse.json({ error: 'Missing submissionId' }, { status: 400 });
 

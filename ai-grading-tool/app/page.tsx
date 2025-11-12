@@ -3,12 +3,18 @@
 import { useEffect, useState } from 'react';
 import { UploadCloud, FileText, Bot, Loader2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
-type GradeResult = {
-  model_name: string;
-  score: number;
-  feedback: string;
-  raw_response?: any;
-};
+type GradeResult =
+  | {
+      model_name: string;
+      score: number;
+      feedback: string;
+      raw_response?: any;
+    }
+  | {
+      model_name: string;
+      error: string;
+      raw_response?: any;
+    };
 
 type RubricAverage = {
   rubric_id: string;

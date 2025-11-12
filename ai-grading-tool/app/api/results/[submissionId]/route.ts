@@ -3,10 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import { rubric, rubricIdToLabel } from '../../../../lib/rubric';
 import { letterFromTotal } from '../../../../lib/gradeMap';
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables are missing');
+  }
+  return createClient(url, key);
+}
 
 export async function GET(_req: Request, ctx: { params: Promise<{ submissionId: string }> }) {
   try {
+    const supabase = getSupabase();
     const { submissionId } = await ctx.params;
     if (!submissionId) return NextResponse.json({ error: 'Missing submissionId' }, { status: 400 });
 

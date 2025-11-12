@@ -29,7 +29,7 @@ export default function WizardPage() {
         // Hold back the uploader until user confirms they want to upload gold and sees the explainer
         return <div className="text-gray-600">Follow the prompts to continue.</div>;
       }
-      return <Step1UploadGold />;
+      return <Step1UploadGold onGoToCalibrate={() => setStep(2)} />;
     }
     if (step === 2) return <Step2Calibrate />;
     if (step === 3) return <Step3UploadBatch />;

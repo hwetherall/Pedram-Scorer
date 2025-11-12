@@ -6,8 +6,22 @@ import { extractPdfText } from '../../../lib/pdf-reader.js';
 import { rubric, rubricIdToPoints, rubricIdToLabel } from '../../../lib/rubric';
 import * as XLSX from 'xlsx';
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-const openrouter = new OpenAI({ baseURL: 'https://openrouter.ai/api/v1', apiKey: process.env.OPENROUTER_API_KEY });
+function getOpenRouter(): OpenAI {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) {
+    throw new Error('OpenRouter API key is missing');
+  }
+  return new OpenAI({ baseURL: 'https://openrouter.ai/api/v1', apiKey: key });
+}
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables are missing');
+  }
+  return createClient(url, key);
+}
 
 function getSystemPrompt(rubricArr: typeof rubric): string {
   const rubricJSON = JSON.stringify(rubricArr.filter(r => r.type !== 'section'), null, 2);
@@ -18,6 +32,7 @@ Rubric:\n${rubricJSON}`;
 
 async function gradeWithModel(model: string, text: string, rubricArr: typeof rubric) {
   try {
+    const openrouter = getOpenRouter();
     const resp = await openrouter.chat.completions.create({
       model,
       messages: [
@@ -89,6 +104,7 @@ async function parseLineScoresFromFile(file: File): Promise<Array<{ rubric_id: s
 
 export async function POST(request: Request) {
   try {
+    const supabase = getSupabase();
     const form = await request.formData();
     const file = form.get('file') as File;
     const finalScoreStr = form.get('final_score') as string;
@@ -124,6 +140,7 @@ export async function POST(request: Request) {
 
     // Compute embedding
     try {
+      const openrouter = getOpenRouter();
       const emb = await openrouter.embeddings.create({ model: 'openai/text-embedding-3-large', input: text.slice(0, 10000) });
       const vec = emb.data?.[0]?.embedding as number[] | undefined;
       if (vec && Array.isArray(vec)) await supabase.from('training_examples').update({ embedding: vec as any }).eq('id', ex.id);

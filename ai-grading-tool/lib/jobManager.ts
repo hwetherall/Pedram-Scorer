@@ -2,7 +2,14 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { BatchJob, SubmissionTask } from './types';
 
-const DATA_DIR = path.join(process.cwd(), 'ai-grading-tool', '.data');
+// Use a writable base directory. On Vercel serverless, only /tmp is writable.
+// In local/dev, default to the project directory.
+const WRITABLE_BASE =
+  process.env.WRITABLE_BASE_DIR
+  || process.env.TMPDIR
+  || (process.env.VERCEL ? '/tmp' : process.cwd());
+
+const DATA_DIR = path.join(WRITABLE_BASE, 'ai-grading-tool', '.data');
 const JOBS_DIR = path.join(DATA_DIR, 'jobs');
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 

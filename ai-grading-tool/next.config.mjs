@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  turbopack: false, // Disable Turbopack
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/wizard',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
